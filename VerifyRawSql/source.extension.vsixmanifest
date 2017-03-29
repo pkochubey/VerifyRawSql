@@ -5,8 +5,7 @@
     <DisplayName>Verify Raw SQL</DisplayName>
     <Description xml:space="preserve">Verify Raw SQL in C# code. Perfect solution if you use ADO, Dapper or any other SQL provider with raw strings.</Description>
     <MoreInfo>https://github.com/pkochubey/VerifyRawSql</MoreInfo>
-    <License>LICENSE.txt</License>
-    <Icon>VRSPackage.ico</Icon>
+    <Icon>Resources/VRSPackage.ico</Icon>
     <Tags>sql, verify, raw sql, vrs</Tags>
   </Metadata>
   <Installation>
