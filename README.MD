@@ -7,7 +7,7 @@ Verify Raw SQL is currently in public preview. We're looking forward to working 
 
 ### Installation
 
-This extension available in the Visual Studio marketplace, use words at search VRS, Verify Raw SQL.
+This extension will be available in the Visual Studio marketplace coming soon, use words at search VRS, Verify Raw SQL.
 
 ### Options
 
