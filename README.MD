@@ -13,6 +13,8 @@ This extension available in the Visual Studio marketplace, use words at search V
 
 You can control when will be run checker, look more detail in **Tools->Options->Verify Raw SQL**
 
+For working extension you should add new connection string to your DB with name **VRS**.
+
 ### Platform support
 
 Operating System: Microsoft Windows 7 and later
