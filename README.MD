@@ -11,9 +11,12 @@ This extension available in the Visual Studio marketplace, use words at search V
 
 ### Options
 
-You can control when will be run checker, look more detail in **Tools->Options->Verify Raw SQL**
+**Tools->Options->Verify Raw SQL** you can control:
 
-For working extension you should add new connection string to your DB with name **VRS**.
+1. When will be started checking, in case save document or\and build project.
+2. What analysis will be use: Static, Dynamic or Both
+
+For working dynamic analysis you should add new connection string to your DB with name **VRS**.
 
 ### Platform support
 

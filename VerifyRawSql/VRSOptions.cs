@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
+using VerifyRawSql.Enums;
 
 namespace VerifyRawSql
 {
@@ -12,8 +13,8 @@ namespace VerifyRawSql
     {
         private bool CheckAtSaveDocuemnt = true;
         private bool CheckAtBuildSolution = true;
+        private VerificationType VerificationType = VerificationType.Both;
 
-   
         [Category(VRSPackage.PackageFullName)]
         [DisplayName("At Saving Document")]
         [Description("Checking expression at saving document")]
@@ -30,6 +31,15 @@ namespace VerifyRawSql
         {
             get { return CheckAtBuildSolution; }
             set { CheckAtBuildSolution = value; }
+        }
+
+        [Category(VRSPackage.PackageFullName)]
+        [DisplayName("Verification Type")]
+        [Description("Static, Dynamic or Both")]
+        public VerificationType OptionVerificationType
+        {
+            get { return VerificationType; }
+            set { VerificationType = value; }
         }
     }
 }

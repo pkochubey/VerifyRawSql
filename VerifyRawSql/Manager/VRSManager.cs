@@ -3,6 +3,7 @@ using EnvDTE;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.SqlServer.TransactSql.ScriptDom;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
@@ -28,12 +29,13 @@ namespace VerifyRawSql.Manager
         private static Regex _regex = new Regex("\"[^\"]*\"", RegexOptions.Compiled);
         private static Regex _replacementCSharpParameters = new Regex("'[^\']*'", RegexOptions.Compiled);
         private static Regex _replacementCSharpStringsParameters = new Regex(@"{\d+}", RegexOptions.Compiled);
+        private static Regex _replacementCSharpStringsInterpolate = new Regex(@"{\w+}", RegexOptions.Compiled);
         private static Regex _replacementSqlParameters = new Regex(@"@\w+", RegexOptions.Compiled);
         private static Regex _replacementSqlEmptyParameters = new Regex(@"=\s+(?![0-9])(?![a-zA-Z])(?![\S])", RegexOptions.Compiled);
         private static Regex _replacementSqlEmptyAndParameters = new Regex(@"[=]\s+and", RegexOptions.Compiled);
         private static Regex _replacementSqlEmptyOrParameters = new Regex(@"[=]\s+or", RegexOptions.Compiled);
         private static string _replacementConstant = "'1'";
-        private static string[] _sqlCommands = { "select ", "update ", "delete ", "insert into" };
+        private static string[] _sqlCommands = { "select", "update", "delete", "insert" };
         private static VRSOptions _optionsPage;
 
         public static void Initialize(VRSPackage serviceProvider)
@@ -50,7 +52,7 @@ namespace VerifyRawSql.Manager
                 return;
             }
 
-            if (GeneralChecking())
+            if (!IsValidConnectionString())
             {
                 return;
             }
@@ -77,7 +79,7 @@ namespace VerifyRawSql.Manager
                 return;
             }
 
-            if (GeneralChecking())
+            if (!IsValidConnectionString())
             {
                 return;
             }
@@ -87,22 +89,27 @@ namespace VerifyRawSql.Manager
             var sqlCommends = GetListOfClearSqlExpression(GetCurrentTextFile(), _dte.ActiveDocument.Name, _dte.ActiveDocument.ProjectItem.ProjectItems.ContainingProject.FileName);
             CheckSqlExpression(sqlCommends);
         }
-        private static bool GeneralChecking()
+        private static bool IsValidConnectionString()
         {
-            ConfigurationManager();
-
             TaskManager.ClearMessage();
+
+            if(_optionsPage.OptionVerificationType == Enums.VerificationType.StaticOnly)
+            {
+                return true;
+            }
+            
+            ConfigurationManager();
 
             if (string.IsNullOrWhiteSpace(_connectionString))
             {
                 TaskManager.AddWarning("Connection string 'VRS' not found. Extension verifying raw SQL not working.", 1, "*.config");
                 LogManager.AddWarning("Connection string 'VRS' not found. Extension verifying raw SQL not working.");
-                return true;
+                return false;
             }
 
             LogManager.AddInfo("Connection string: " + _connectionString);
-
-            return false;
+           
+            return true;
         }
         private static List<string> FindFilesInFolder(ProjectItem item, string pattern)
         {
@@ -255,12 +262,7 @@ namespace VerifyRawSql.Manager
             var allStrings = allStringsArgument;
             allStrings.AddRange(allStringsEquals);
 
-            foreach (string command in _sqlCommands)
-            {
-                rawSqlStrings.AddRange(allStrings.Where(x => x.Value.Contains(command)).ToList());
-            }
-
-            foreach (var rawSql in rawSqlStrings)
+            foreach (var rawSql in allStrings)
             {
                 var matches = _regex.Matches(rawSql.Value);
                 if (matches.Count > 0)
@@ -272,34 +274,45 @@ namespace VerifyRawSql.Manager
                     }
                     if (!string.IsNullOrWhiteSpace(buffer))
                     {
+                        var isValidSqlString = false;
+                        var staticErrors = new List<string>();
+
                         string result = _replacementCSharpParameters.Replace(buffer, _replacementConstant);
                         result = _replacementCSharpStringsParameters.Replace(result, _replacementConstant);
                         result = _replacementSqlParameters.Replace(result, _replacementConstant);
+                        result = _replacementCSharpStringsInterpolate.Replace(result, _replacementConstant);
                         result = _replacementSqlEmptyParameters.Replace(result, "= " + _replacementConstant);
                         result = _replacementSqlEmptyAndParameters.Replace(result, "= " + _replacementConstant);
                         result = _replacementSqlEmptyOrParameters.Replace(result, "= " + _replacementConstant);
 
-                        foreach (string command in _sqlCommands)
+                        foreach (var command in _sqlCommands)
                         {
-                            if (result.Contains(command))
+                            if (LevenshteinDistance(result.Split(' ')[0], command) < 3)
                             {
-                                IVsHierarchy hierarchyItem = null;
-                                if(_ivsSolution != null)
-                                {
-                                    _ivsSolution.GetProjectOfUniqueName(rawSql.ProjectName, out hierarchyItem);
-                                }
-
-                                clearSqlExpression.Add(new RowDescription
-                                {
-                                    Value = result,
-                                    Line = rawSql.Line,
-                                    FileName = rawSql.FileName,
-                                    HierarchyItem = hierarchyItem
-                                });
+                                staticErrors = StaticAnalyse(result);
+                                isValidSqlString = true;
                                 break;
                             }
                         }
 
+                        IVsHierarchy hierarchyItem = null;
+                        if (_ivsSolution != null)
+                        {
+                            _ivsSolution.GetProjectOfUniqueName(rawSql.ProjectName, out hierarchyItem);
+                        }
+
+                        if (!isValidSqlString)
+                        {
+                            continue;
+                        }
+
+                        clearSqlExpression.Add(new RowDescription
+                        {
+                            Value = result,
+                            Line = rawSql.Line,
+                            FileName = rawSql.FileName,
+                            HierarchyItem = hierarchyItem
+                        });
                     }
                 }
             }
@@ -313,6 +326,26 @@ namespace VerifyRawSql.Manager
                 return;
             }
 
+            if (_optionsPage.OptionVerificationType == Enums.VerificationType.StaticOnly ||
+                _optionsPage.OptionVerificationType == Enums.VerificationType.Both)
+            {
+                foreach (var sql in clearSqlExpression)
+                {
+                    var sqlErrors = StaticAnalyse(sql.Value);
+                    if (sqlErrors.Count > 0)
+                    {
+                        var message = sqlErrors.Aggregate((i, j) => i + "\n" + j).ToString();
+
+                        LogManager.AddError($"Message: {message} in file: {sql.FileName} line: {sql.Line}");
+                        TaskManager.AddError(message, sql.Line, sql.FileName, sql.HierarchyItem);
+                    }
+                }
+
+                if (_optionsPage.OptionVerificationType == Enums.VerificationType.StaticOnly)
+                {
+                    return;
+                }
+            }
 
             using (IDbConnection db = new SqlConnection(_connectionString))
             {
@@ -330,6 +363,53 @@ namespace VerifyRawSql.Manager
                     }
                 }
             }
+        }
+
+        public static List<string> StaticAnalyse(string sql)
+        {
+            TSql120Parser parser = new TSql120Parser(false);
+
+            IList<ParseError> errors;
+            parser.Parse(new StringReader(sql), out errors);
+            if (errors != null && errors.Count > 0)
+            {
+                List<string> errorList = new List<string>();
+                foreach (var error in errors)
+                {
+                    errorList.Add(error.Message);
+                }
+                return errorList;
+            }
+
+            return new List<string>();
+        }
+
+        private static int LevenshteinDistance(string string1, string string2)
+        {
+            if (string.IsNullOrWhiteSpace(string1) || 
+                string.IsNullOrWhiteSpace(string2))
+            {
+                return 999;
+            }
+
+            int diff;
+            int[,] m = new int[string1.Length + 1, string2.Length + 1];
+
+            for (int i = 0; i <= string1.Length; i++) { m[i, 0] = i; }
+            for (int j = 0; j <= string2.Length; j++) { m[0, j] = j; }
+
+            for (int i = 1; i <= string1.Length; i++)
+            {
+                for (int j = 1; j <= string2.Length; j++)
+                {
+                    diff = (string1[i - 1] == string2[j - 1]) ? 0 : 1;
+
+                    m[i, j] = Math.Min(Math.Min(m[i - 1, j] + 1,
+                                             m[i, j - 1] + 1),
+                                             m[i - 1, j - 1] + diff);
+                }
+            }
+            return m[string1.Length, string2.Length];
         }
     }
 }
