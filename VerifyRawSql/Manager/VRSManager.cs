@@ -338,6 +338,8 @@ namespace VerifyRawSql.Manager
 
                         LogManager.AddError($"Message: {message} in file: {sql.FileName} line: {sql.Line}");
                         TaskManager.AddError(message, sql.Line, sql.FileName, sql.HierarchyItem);
+
+                        sql.HasErrorInStaticAnalyse = true;
                     }
                 }
 
@@ -349,7 +351,7 @@ namespace VerifyRawSql.Manager
 
             using (IDbConnection db = new SqlConnection(_connectionString))
             {
-                foreach (var sql in clearSqlExpression)
+                foreach (var sql in clearSqlExpression.Where(x=>!x.HasErrorInStaticAnalyse))
                 {
                     try
                     {

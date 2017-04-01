@@ -14,5 +14,6 @@ namespace VerifyRawSql.Models
         public string FileName { get; set; }
         public IVsHierarchy HierarchyItem { get; set; }
         public string ProjectName { get; set; }
+        public bool HasErrorInStaticAnalyse { get; set; }
     }
 }

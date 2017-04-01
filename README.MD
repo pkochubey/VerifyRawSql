@@ -1,7 +1,7 @@
 ﻿Verify Raw SQL for Visual Studio
 ===================================
 
-The extension implements a sql checker within the Visual Studio.
+Extension for checking raw sql strings in C# code.
 
 ![](https://github.com/pkochubey/VerifyRawSql/blob/master/VerifyRawSql/Resources/how-it-is-work.gif)
 
@@ -27,3 +27,24 @@ Operating System: Microsoft Windows 7 and later
 Visual Studio: The extension requires Visual Studio 2015 and higher
 
 Languages: C#
+
+
+### Changelog
+
+### 1.1.1 (2017-04-01)
+
+Fixed repeated issues
+
+
+### 1.1.0 (2017-03-31)
+
+Added static type of validation
+
+Added new option in option page
+
+Improvement in catching SQL strings
+
+
+### 1.0.0 (2017-03-28)
+
+Added dynamic type of validation
