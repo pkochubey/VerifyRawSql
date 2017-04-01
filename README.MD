@@ -3,6 +3,8 @@
 
 The extension implements a sql checker within the Visual Studio.
 
+![](https://github.com/pkochubey/VerifyRawSql/blob/master/VerifyRawSql/Resources/how-it-is-work.gif)
+
 Verify Raw SQL is currently in public preview. We're looking forward to working with the community to improve both the rules over the next few months, and welcome your feedback and contributions!
 
 ### Installation
