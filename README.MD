@@ -31,6 +31,11 @@ Languages: C#
 
 ### Changelog
 
+### 1.1.2 (2017-04-03)
+
+Added new option: "First Keywords" it's first list of word in the string for recognize SQL string. 
+
+
 ### 1.1.1 (2017-04-01)
 
 Fixed repeated issues

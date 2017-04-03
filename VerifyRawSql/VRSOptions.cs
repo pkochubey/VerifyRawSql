@@ -14,6 +14,7 @@ namespace VerifyRawSql
         private bool CheckAtSaveDocuemnt = true;
         private bool CheckAtBuildSolution = true;
         private VerificationType VerificationType = VerificationType.Both;
+        private string FirstKeywords = "Select, Update, Delete, Insert, With";
 
         [Category(VRSPackage.PackageFullName)]
         [DisplayName("At Saving Document")]
@@ -40,6 +41,15 @@ namespace VerifyRawSql
         {
             get { return VerificationType; }
             set { VerificationType = value; }
+        }
+
+        [Category(VRSPackage.PackageFullName)]
+        [DisplayName("First Keywords")]
+        [Description("Array, separator is ','")]
+        public string OptionFirstKeywords
+        {
+            get { return FirstKeywords; }
+            set { FirstKeywords = value; }
         }
     }
 }

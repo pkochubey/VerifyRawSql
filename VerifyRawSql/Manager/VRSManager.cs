@@ -35,7 +35,6 @@ namespace VerifyRawSql.Manager
         private static Regex _replacementSqlEmptyAndParameters = new Regex(@"[=]\s+and", RegexOptions.Compiled);
         private static Regex _replacementSqlEmptyOrParameters = new Regex(@"[=]\s+or", RegexOptions.Compiled);
         private static string _replacementConstant = "'1'";
-        private static string[] _sqlCommands = { "select", "update", "delete", "insert" };
         private static VRSOptions _optionsPage;
 
         public static void Initialize(VRSPackage serviceProvider)
@@ -285,7 +284,17 @@ namespace VerifyRawSql.Manager
                         result = _replacementSqlEmptyAndParameters.Replace(result, "= " + _replacementConstant);
                         result = _replacementSqlEmptyOrParameters.Replace(result, "= " + _replacementConstant);
 
-                        foreach (var command in _sqlCommands)
+                        var sqlCommands = new List<string>();
+                        if(_optionsPage != null)
+                        {
+                            sqlCommands = _optionsPage.OptionFirstKeywords.Split(',').Select(x => x.Trim().ToLower()).ToList();
+                        }
+                        else
+                        {
+                            sqlCommands = new VRSOptions().OptionFirstKeywords.Split(',').Select(x => x.Trim().ToLower()).ToList();
+                        }
+
+                        foreach (var command in sqlCommands)
                         {
                             if (LevenshteinDistance(result.Split(' ')[0], command) < 3)
                             {

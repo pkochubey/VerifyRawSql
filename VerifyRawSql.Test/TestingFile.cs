@@ -27,6 +27,15 @@ namespace App
 
             // string 7
             var sql7 = $"Select * From Test7 Where Id = {result}";
+
+            // string 8
+            var sql8 = db.Query<string>(";WITH cte AS (" + Environment.NewLine +
+                    "  SELECT " + Environment.NewLine +
+                    "    id, name, " + Environment.NewLine +
+                    "    ROW_NUMBER() OVER (PARTITION BY name ORDER BY name) AS rn " + Environment.NewLine +
+                    "  FROM Names" + Environment.NewLine +
+                    "  WHERE CONTAINS(name, '\"*" + value.Trim() + "*\"'))" + Environment.NewLine +
+                    "SELECT * FROM cte WHERE cte.rn <= 1").ToList();
         }
     }
 }
