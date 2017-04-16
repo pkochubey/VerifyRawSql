@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="VerifyRawSql.PavelKochubey.890adb6d-6eca-41f0-8316-803932baf386" Version="1.1.2" Language="en-US" Publisher="Pavel Kochubey" />
+    <Identity Id="VerifyRawSql.PavelKochubey.890adb6d-6eca-41f0-8316-803932baf386" Version="1.1.3" Language="en-US" Publisher="Pavel Kochubey" />
     <DisplayName>Verify Raw SQL</DisplayName>
     <Description xml:space="preserve">Verify Raw SQL in C# code. Perfect solution if you use ADO, Dapper or any other SQL provider with raw strings.</Description>
     <MoreInfo>https://github.com/pkochubey/VerifyRawSql</MoreInfo>

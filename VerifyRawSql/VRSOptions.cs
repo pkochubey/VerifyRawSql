@@ -15,6 +15,7 @@ namespace VerifyRawSql
         private bool CheckAtBuildSolution = true;
         private VerificationType VerificationType = VerificationType.Both;
         private string FirstKeywords = "Select, Update, Delete, Insert, With";
+        private int LevenshteinDistance = 2;
 
         [Category(VRSPackage.PackageFullName)]
         [DisplayName("At Saving Document")]
@@ -50,6 +51,15 @@ namespace VerifyRawSql
         {
             get { return FirstKeywords; }
             set { FirstKeywords = value; }
+        }
+
+        [Category(VRSPackage.PackageFullName)]
+        [DisplayName("Levenshtein Distance")]
+        [Description("Levenshtein distance used for recognize typing error in first words in string")]
+        public int OptionLevenshteinDistance
+        {
+            get { return LevenshteinDistance; }
+            set { LevenshteinDistance = value; }
         }
     }
 }

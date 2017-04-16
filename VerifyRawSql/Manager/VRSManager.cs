@@ -29,7 +29,7 @@ namespace VerifyRawSql.Manager
         private static Regex _regex = new Regex("\"[^\"]*\"", RegexOptions.Compiled);
         private static Regex _replacementCSharpParameters = new Regex("'[^\']*'", RegexOptions.Compiled);
         private static Regex _replacementCSharpStringsParameters = new Regex(@"{\d+}", RegexOptions.Compiled);
-        private static Regex _replacementCSharpStringsInterpolate = new Regex(@"{\w+}", RegexOptions.Compiled);
+        private static Regex _replacementCSharpStringsInterpolate = new Regex(@"{.+?}", RegexOptions.Compiled);
         private static Regex _replacementSqlParameters = new Regex(@"@\w+", RegexOptions.Compiled);
         private static Regex _replacementSqlEmptyParameters = new Regex(@"=\s+(?![0-9])(?![a-zA-Z])(?![\S])", RegexOptions.Compiled);
         private static Regex _replacementSqlEmptyAndParameters = new Regex(@"[=]\s+and", RegexOptions.Compiled);
@@ -296,7 +296,7 @@ namespace VerifyRawSql.Manager
 
                         foreach (var command in sqlCommands)
                         {
-                            if (LevenshteinDistance(result.Split(' ')[0], command) < 3)
+                            if (LevenshteinDistance(result.Split(' ')[0], command) < (_optionsPage?.OptionLevenshteinDistance ?? 2))
                             {
                                 staticErrors = StaticAnalyse(result);
                                 isValidSqlString = true;

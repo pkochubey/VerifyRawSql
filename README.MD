@@ -31,6 +31,13 @@ Languages: C#
 
 ### Changelog
 
+### 1.1.3 (2017-04-16)
+
+Added new option: "Levenshtein distance" it's used for recognize typing error in first words in string
+
+Improvement in catching interpolated string strings
+
+
 ### 1.1.2 (2017-04-03)
 
 Added new option: "First Keywords" it's first list of word in the string for recognize SQL string. 
